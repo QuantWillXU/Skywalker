@@ -29,7 +29,7 @@ from skywalker import dataseries
 from skywalker import dispatcher
 from skywalker import logger
 from skywalker import observer
-from skywalker import skysenseplotter
+from skywalker import skywalkerplotter
 from skywalker.barfeed import pgfeed_nowind
 from skywalker.barfeed import resampled
 from skywalker.broker import backtesting
@@ -520,7 +520,7 @@ class BaseStrategy(object):
             pos.onOrderEvent(orderEvent)
 
     def __fixPostionsAndCash(self, datetime):
-        pos = self.getPositions()
+        pos = self.getBroker().getPositions()
         for instrument in pos.keys():
             if self.getFeed().haveEquityEvent(instrument, datetime):
                 equityEvent = self.getFeed().getEquityEvent(instrument)
@@ -701,7 +701,7 @@ class SkysenseBacktestingStrategy(BacktestingStrategy):
     def run(self, generateReport=True, haveStrat=True, show=False):
         self.loadData()
         super(SkysenseBacktestingStrategy, self).run()
-        plt = skysenseplotter.StrategyPlotter(self)
+        plt = skywalkerplotter.StrategyPlotter(self)
         plt.plotReturns(haveStrat, show)
         if generateReport:
             self.skysenseAnalyzer.generateReport('returns.jpg')

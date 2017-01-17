@@ -1,18 +1,14 @@
-from skywalker import bar
 # from pyalgotrade import plotter
+import matplotlib.pyplot as plt
+from matplotlib.dates import DateFormatter, WeekdayLocator, \
+    DayLocator, MONDAY, date2num, MonthLocator
+from matplotlib.finance import candlestick_ohlc
+
+from skywalker import skywalkerplotter
 from skywalker import strategy
 from skywalker.barfeed import pgfeed
-from skywalker.barfeed import yahoofeed
-from skywalker.barfeed import tusharefeed
-from pyalgotrade.tools import yahoofinance
 from skywalker.stratanalyzer import sharpe
 from skywalker.technical import vwap
-from skywalker import skysenseplotter
-
-import matplotlib.pyplot as plt
-from matplotlib.dates import DateFormatter, WeekdayLocator,\
-    DayLocator, MONDAY,date2num,MonthLocator
-from matplotlib.finance import quotes_historical_yahoo_ohlc, candlestick_ohlc
 
 
 class VWAPMomentum(strategy.SkysenseBacktestingStrategy):
@@ -74,7 +70,7 @@ def main(plot):
 
     strat.run()
     # strat.skysenseAnalyzer.generateReport('sma.jpg')
-    plter = skysenseplotter.StrategyPlotter(strat)
+    plter = skywalkerplotter.StrategyPlotter(strat)
 
     plter.plotReturns()
 

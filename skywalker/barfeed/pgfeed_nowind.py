@@ -264,12 +264,14 @@ class Database(dbfeed.Database):
         else:
             return param
 
-    def getBars(self, instrument, frequency, timezone=None, fromDateTime=None, toDateTime=None, extra=[]):
+    def getBars(self, instrument, frequency, timezone=None, fromDateTime=None, toDateTime=None, extra=None):
         instrument = normalize_instrument(instrument)
         sql = "select bar.timestamp, bar.open, bar.high, bar.low, bar.close, bar.volume, bar.adj_close, bar.frequency{extra}" \
               " from bar join instrument on (bar.instrument_id = instrument.instrument_id)" \
               " where instrument.name = %s and bar.frequency = %s"
         extraFieldsString = ''
+        if extra is None:
+            extra = []
         for i in range(0, len(extra)):
             extraFieldsString = extraFieldsString + ", " + "bar." + extra[i]
         args = [instrument, frequency]
@@ -346,7 +348,9 @@ class Feed(membf.BarFeed):
     def getDatabase(self):
         return self.__db
 
-    def loadBars(self, instrument, timezone=None, fromDateTime=None, toDateTime=None, extra=[]):
+    def loadBars(self, instrument, timezone=None, fromDateTime=None, toDateTime=None, extra=None):
+        if extra is None:
+            extra = []
         fd = datetime.strptime(fromDateTime, '%Y-%m-%d')
         td = datetime.strptime(toDateTime, '%Y-%m-%d')
         for i in range(0, len(instrument)):
@@ -366,12 +370,15 @@ class Feed(membf.BarFeed):
         return ee
 
     def getEquityEvent(self, instrument):
-        return self.__equityEventsDict[instrument]
+        try:
+            return self.__equityEventsDict[instrument]
+        except TypeError:
+            return None
 
     def haveEquityEvent(self, instrument, date):
         equityEvent = self.getEquityEvent(instrument)
-        if len(equityEvent[date:date]) > 0:
-            haveEE = True
-        else:
+        if equityEvent is None or len(equityEvent[date:date]) <= 0:
             haveEE = False
+        else:
+            haveEE = True
         return haveEE

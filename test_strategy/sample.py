@@ -40,8 +40,8 @@ class MyStrategy(strategy.SkysenseBacktestingStrategy):
 strat = MyStrategy()
 strat.setStartDate("2000-06-26")
 strat.setEndDate("2016-07-30")
-strat.setUniverse(["000333.SZ"])
-# strat.setUniverse(["300345"])
+strat.setUniverse(["000001.SZ"])
+
 # strat.setUniverse()'002113.SZ','000005.SZ', '000025.SZ',
 # strat.setBenchmenk('000002.SZ')
 # strat.setBenchmenk('000001')
