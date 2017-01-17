@@ -44,7 +44,7 @@ strat.setEndDate("2016-07-30")
 strat.setUniverse(["000333.SZ"])
 # strat.setUniverse(["300345"])
 # strat.setUniverse()'002113.SZ','000005.SZ', '000025.SZ',
-strat.setBenchmenk('000002.SZ')
+# strat.setBenchmenk('000002.SZ')
 # strat.setBenchmenk('000001')
 # strat.setUseAdjustedValues(True)
 strat.run(generateReport=True, haveStrat=True, show=False)
