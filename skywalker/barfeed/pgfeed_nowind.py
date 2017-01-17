@@ -34,6 +34,9 @@ class Database(dbfeed.Database):
         cursor.close()
         return ret
 
+    def connection(self):
+        return self.__connection
+
     def __addInstrument(self, instrument):
         self.__cursor.execute("insert into instrument (name) values (%s)", [instrument])
         self.__connection.commit()
@@ -148,6 +151,21 @@ class Database(dbfeed.Database):
         self.__cursor.execute(sqlCreate)
         self.__connection.commit()
 
+    def getFundamentalFields(self):
+        """ 返回表格的字段"""
+        sql = '''SELECT a.attname as name
+        FROM pg_class as c,pg_attribute as a
+        where c.relname = 'fundamental' and a.attrelid = c.oid and a.attnum>0  '''
+        cursor = self.__connection.cursor()
+        cursor.execute(sql)
+        fields = cursor.fetchall()
+        fields = [tup[0] for tup in fields]
+        # fields = list(zip(*fields)[0])
+        # 删除某个字段后postgreSQL数据库中会留下类似........pg.dropped.9........的字段，需要将其去除
+        fields = [i for i in fields if '........' not in i]
+        return fields
+
+
     def importBarsFromCSV(self, filename, instrument):
         data = pd.read_csv(filename, encoding='gbk')
         for k in range(0, len(data)):
@@ -165,6 +183,27 @@ class Database(dbfeed.Database):
             # except Exception:
             #     continue
             self.addBar(instrument, bar_, bar_.getFrequency())
+
+    def importBarsFromCSVByPandas(self, filename, instrument):
+        def tradeStatusConverter(tradeStatus):
+            if tradeStatus == u'交易':
+                ret = 1
+            else:
+                ret = 0
+            return ret
+
+        from skywalker.utils.dt import datetime_to_timestamp
+        dateConverter = lambda date: datetime_to_timestamp(datetime.strptime(date[0:19], "%Y-%m-%d %H:%M:%S"))
+        converters = {'TRADE_STATUS': tradeStatusConverter}
+        data = pd.read_csv(filename, encoding='gbk', converters=converters)
+        data['adj_close'] = data['ADJFACTOR'] * data['CLOSE']
+        data['instrument_id'] = self.__getOrCreateInstrument(instrument)
+        data['timestamp'] = data['DATE'].apply(dateConverter)
+        data['frequency'] = bar.Frequency.DAY
+        data = data.drop(['DATE', 'ADJFACTOR'], axis=1)
+        data = data.dropna()
+        data.columns = data.columns.map(lambda x: x.lower())
+        return data
 
     def addBar(self, instrument, bar, frequency):
         """将bar中数据插入数据库"""
@@ -315,8 +354,8 @@ class Feed(membf.BarFeed):
             self.addBarsFromSequence(instrument[i], bars)
         self.__equityEventsDict = {k: self.__getEquityEvent(k) for k in instrument}
 
-    def importBars(self, instrument, fromDateTime, toDateTime, extra=[]):
-        self.__db.importBars(instrument, fromDateTime, toDateTime, extra)
+    # def importBars(self, instrument, fromDateTime, toDateTime, extra=[]):
+    #     self.__db.importBars(instrument, fromDateTime, toDateTime, extra)
 
     def getAllInstruments(self):
         instruments = self.__db.getAllInstruments()
