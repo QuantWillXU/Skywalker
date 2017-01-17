@@ -1,5 +1,4 @@
 from skywalker import strategy
-import numpy as np
 
 
 class MyStrategy(strategy.SkysenseBacktestingStrategy):
@@ -48,5 +47,6 @@ strat.setUniverse(["000333.SZ"])
 # strat.setBenchmenk('000001')
 # strat.setUseAdjustedValues(True)
 strat.run(generateReport=True, haveStrat=True, show=False)
+print(1)
 # strat.run()
 # strat.getFeed()['002113.SZ'].getPandasDataFrame().to_csv('002113.SZ.csv')
