@@ -19,7 +19,7 @@ class MyStrategy(strategy.SkysenseBacktestingStrategy):
         # self.getBroker().fixPositions('600128.SH', self.count)
         # print self.getCurrentDateTime()
         self.count += 1
-        self.marketOrder(self.getInstruments()[0],self.count)
+        self.marketOrder(self.getInstruments()[0], self.count)
         # print(self.getInstruments())
         # print self.getFeed().getCurrentDateTime()
 
@@ -38,15 +38,13 @@ class MyStrategy(strategy.SkysenseBacktestingStrategy):
 
 # ["300345.SZ"],'2015-06-25','2016-07-30'
 strat = MyStrategy()
-strat.setStartDate("2000-06-26")
-strat.setEndDate("2016-07-30")
-strat.setUniverse(["000001.SZ"])
-
-# strat.setUniverse()'002113.SZ','000005.SZ', '000025.SZ',
-# strat.setBenchmenk('000002.SZ')
+strat.setStartDate("2016-01-01")
+strat.setEndDate("2017-01-01")
+strat.setUniverse(["000712.SZ"])
+strat.setBenchmenk('002517.SZ')
 # strat.setBenchmenk('000001')
 # strat.setUseAdjustedValues(True)
-strat.run(generateReport=True, haveStrat=True, show=False)
-print(1)
+strat.run(generateReport=False, haveStrat=True, show=True)
+
 # strat.run()
 # strat.getFeed()['002113.SZ'].getPandasDataFrame().to_csv('002113.SZ.csv')

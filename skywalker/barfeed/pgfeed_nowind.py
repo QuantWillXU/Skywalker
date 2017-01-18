@@ -18,7 +18,7 @@ def normalize_instrument(instrument):
 
 
 class Database(dbfeed.Database):
-    def __init__(self, host='localhost', port=5432, user='postgres', password='xuweikx', database='securityDB'):
+    def __init__(self, host='localhost', port=5432, user='postgres', password='123456', database='Skywalker'):
         self.__instrumentIds = {}
         self.__connection = psycopg2.connect(host=host, port=port, user=user, password=password, database=database)
         self.__cursor = self.__connection.cursor()
@@ -139,6 +139,7 @@ class Database(dbfeed.Database):
             ", close real not null"
             ", volume real not null"
             ", adj_close real"
+            ", trade_status integer"
             ", primary key (instrument_id, frequency, timestamp))")
         self.__connection.commit()
 
@@ -203,7 +204,10 @@ class Database(dbfeed.Database):
         data = data.drop(['DATE', 'ADJFACTOR'], axis=1)
         data = data.dropna()
         data.columns = data.columns.map(lambda x: x.lower())
-        return data
+        from sqlalchemy import create_engine
+        engine = create_engine('postgresql://postgres:123456@localhost:5432/Skywalker')
+        data.to_sql(name='bar', con=engine, if_exists='append', index=False)
+
 
     def addBar(self, instrument, bar, frequency):
         """将bar中数据插入数据库"""
@@ -336,8 +340,8 @@ class Database(dbfeed.Database):
 
 
 class Feed(membf.BarFeed):
-    def __init__(self, frequency=bar.Frequency.DAY, host='localhost', port=5432, user='postgres', password='xuweikx',
-                 database='securityDB', maxLen=None):
+    def __init__(self, frequency=bar.Frequency.DAY, host='localhost', port=5432, user='postgres', password='123456',
+                 database='Skywalker', maxLen=None):
         super(Feed, self).__init__(frequency, maxLen)
         self.__db = Database(host=host, port=port, user=user, password=password, database=database)
         self.__equityEventsDict = None
