@@ -1,4 +1,5 @@
 from pyalgotrade import strategy
+
 from skywalker.barfeed import windlivefeed
 from skywalker.broker import windbroker
 
@@ -13,12 +14,12 @@ class TestStrat(strategy.BaseStrategy):
         # print self.getCurrentDateTime()
         # print self.getActivePositions()
         # print self.getLastPrice("600900.SH")
-        print self.getBroker().getPositions()
+        print(self.getBroker().getPositions())
         # print self.getBroker().getCash()
         # print self.getBroker().getEquity()
         self.limitOrder(instrument="300345.SZ",limitPrice=11,quantity=100)
         # self.marketOrder("300345.SZ", -100)
-        print self.getCurrentDateTime()
+        print(self.getCurrentDateTime())
         # print self.getBroker().getActiveOrders()
 
 

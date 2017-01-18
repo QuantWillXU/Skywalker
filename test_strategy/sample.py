@@ -36,14 +36,11 @@ class MyStrategy(strategy.SkysenseBacktestingStrategy):
         # print self.getTradeStatus(self.getInstruments()[0])[-1]
 
 
-# ["300345.SZ"],'2015-06-25','2016-07-30'
 strat = MyStrategy()
 strat.setStartDate("2016-01-01")
 strat.setEndDate("2017-01-01")
 strat.setUniverse(["000712.SZ"])
 strat.setBenchmenk('002517.SZ')
-# strat.setBenchmenk('000001')
-# strat.setUseAdjustedValues(True)
 strat.run(generateReport=False, haveStrat=True, show=True)
 
 # strat.run()
