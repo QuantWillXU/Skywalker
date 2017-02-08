@@ -6,6 +6,7 @@ from math import isnan
 
 import pandas as pd
 import psycopg2
+from sqlalchemy import create_engine
 
 from skywalker import bar
 from skywalker.barfeed import dbfeed
@@ -22,6 +23,7 @@ class Database(dbfeed.Database):
         self.__instrumentIds = {}
         self.__connection = psycopg2.connect(host=host, port=port, user=user, password=password, database=database)
         self.__cursor = self.__connection.cursor()
+        self.__engine = create_engine('postgresql://postgres:123456@localhost:5432/Skywalker')
 
     def __findInstrumentId(self, instrument):
         cursor = self.__connection.cursor()
@@ -146,11 +148,15 @@ class Database(dbfeed.Database):
     def createFundamentalTab(self):
         sqlCreate = """create table fundamental (
         instrument_id integer references instrument (instrument_id),
+        field text not null,
         frequency integer not null,
         timestamp integer not null,
-        primary key (instrument_id, frequency, timestamp))"""
+        primary key (instrument_id, field, frequency, timestamp))"""
         self.__cursor.execute(sqlCreate)
         self.__connection.commit()
+
+    def getFundamental(self, instrument, field, fromdate, todate=None):
+        pass
 
     def getFundamentalFields(self):
         """ 返回表格的字段"""
@@ -204,8 +210,7 @@ class Database(dbfeed.Database):
         data = data.drop(['DATE', 'ADJFACTOR'], axis=1)
         data = data.dropna()
         data.columns = data.columns.map(lambda x: x.lower())
-        from sqlalchemy import create_engine
-        engine = create_engine('postgresql://postgres:123456@localhost:5432/Skywalker')
+        engine = self.__engine
         data.to_sql(name='bar', con=engine, if_exists='append', index=False)
 
 
