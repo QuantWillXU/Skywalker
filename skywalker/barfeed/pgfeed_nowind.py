@@ -12,6 +12,8 @@ from skywalker import bar
 from skywalker.barfeed import dbfeed
 from skywalker.barfeed import membf
 from skywalker.utils import dt
+from skywalker.utils.dt import datetime_to_timestamp
+from skywalker.utils.dt import timestamp_to_datetime
 
 
 def normalize_instrument(instrument):
@@ -149,6 +151,7 @@ class Database(dbfeed.Database):
         sqlCreate = """create table fundamental (
         instrument_id integer references instrument (instrument_id),
         field text not null,
+        value real not null,
         frequency integer not null,
         timestamp integer not null,
         primary key (instrument_id, field, frequency, timestamp))"""
@@ -156,7 +159,31 @@ class Database(dbfeed.Database):
         self.__connection.commit()
 
     def getFundamental(self, instrument, field, fromdate, todate=None):
-        pass
+        if todate is None:
+            todate = fromdate
+        sql = """select fundamental.timestamp, instrument.name, fundamental.field, fundamental.value
+        from fundamental join instrument on (fundamental.instrument_id = instrument.instrument_id)
+        where instrument.name = {instrument}
+        and field = {field}
+        and fundamental.timestamp >= {fd_timestamp}
+        and fundamental.timestamp <= {td_timestamp}
+        """.format(instrument=instrument,
+                   field=field,
+                   fd_timestamp=datetime_to_timestamp(datetime.strptime(fromdate, 'Y%-m%-d%')),
+                   td_timestamp=datetime_to_timestamp(datetime.strptime(todate, 'Y%-m%-d%'))
+                   )
+        cursor = self.__connection.cursor()
+        cursor.execute(sql)
+        self.__connection.commit()
+        columns = ['date', 'instrument', 'field', 'value']
+        ret = pd.DataFrame(data=list(cursor), columns=columns).apply(func=timestamp_to_datetime,
+                                                                     axis='date').set_index('date')
+        return ret
+
+
+
+
+
 
     def getFundamentalFields(self):
         """ 返回表格的字段"""
@@ -199,7 +226,7 @@ class Database(dbfeed.Database):
                 ret = 0
             return ret
 
-        from skywalker.utils.dt import datetime_to_timestamp
+
         dateConverter = lambda date: datetime_to_timestamp(datetime.strptime(date[0:19], "%Y-%m-%d %H:%M:%S"))
         converters = {'TRADE_STATUS': tradeStatusConverter}
         data = pd.read_csv(filename, encoding='gbk', converters=converters)
@@ -373,6 +400,10 @@ class Feed(membf.BarFeed):
     def getAllInstruments(self):
         instruments = self.__db.getAllInstruments()
         return instruments
+
+    def getFundamental(self, instrument, field, fromdate, todate=None):
+        ret = self.__db.getFundamental(instrument=instrument, field=field, fromdate=fromdate, todate=todate)
+        return ret
 
     def __getEquityEvent(self, instrument):
         ee = self.__db.getEquityEvent(instrument)
